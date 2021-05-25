@@ -3,8 +3,9 @@ package handlers
 import (
 	"log"
 	"regexp"
-	"net/http"
 	"strconv"
+
+	"net/http"
 
 	"github.com/nicholasjackson/building-microservices-youtube/product-api/data"
 )
@@ -34,11 +35,10 @@ func (p *Products) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodPut {
-		p.l.Println("PUT", r.URL.Path)
-		// expect the id in the URI
+		// expect the id to be in the URI
+		p.l.Println("PUT")
 		reg := regexp.MustCompile(`/([0-9]+)`)
 		g := reg.FindAllStringSubmatch(r.URL.Path, -1)
-
 		if len(g) != 1 {
 			p.l.Println("Invalid URI more than one id")
 			http.Error(rw, "Invalid URI", http.StatusBadRequest)
@@ -54,7 +54,7 @@ func (p *Products) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		idString := g[0][1]
 		id, err := strconv.Atoi(idString)
 		if err != nil {
-			p.l.Println("Invalid URI unable to convert to numer", idString)
+			p.l.Println("Invalid URI unable to convert to number", idString)
 			http.Error(rw, "Invalid URI", http.StatusBadRequest)
 			return
 		}
@@ -95,7 +95,7 @@ func (p *Products) addProduct(rw http.ResponseWriter, r *http.Request) {
 	data.AddProduct(prod)
 }
 
-func (p Products) updateProducts(id int, rw http.ResponseWriter, r*http.Request) {
+func (p *Products) updateProducts(id int, rw http.ResponseWriter, r *http.Request) {
 	p.l.Println("Handle PUT Product")
 
 	prod := &data.Product{}
@@ -106,13 +106,12 @@ func (p Products) updateProducts(id int, rw http.ResponseWriter, r*http.Request)
 	}
 
 	err = data.UpdateProduct(id, prod)
-	if err == data.ErrProductNotFound {
+	if err == data.ErrorProductNotFound {
 		http.Error(rw, "Product not found", http.StatusNotFound)
 		return
 	}
-
 	if err != nil {
-		http.Error(rw, "Product not found", http.StatusInternalServerError)
+		http.Error(rw, "Product not found", http.StatusNotFound)
 		return
 	}
 }

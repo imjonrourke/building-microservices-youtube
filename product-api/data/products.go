@@ -43,24 +43,22 @@ func GetProducts() Products {
 	return productList
 }
 
+func UpdateProduct(id int, p *Product) error {
+	_, pos, err := findProduct(id)
+	if err != nil {
+		return err
+	}
+	p.ID = id
+	productList[pos] = p
+	return nil
+}
+
 func AddProduct(p *Product) {
 	p.ID = getNextID()
 	productList = append(productList, p)
 }
 
-func UpdateProduct(id int, p*Product) error {
-	_, pos, err := findProduct(id)
-	if err != nil {
-		return err
-	}
-
-	p.ID = id
-	productList[pos] = p
-
-	return nil
-}
-
-var ErrProductNotFound = fmt.Errorf("Product not found")
+var ErrorProductNotFound = fmt.Errorf("Product not found")
 
 func findProduct(id int) (*Product, int, error) {
 	for i, p := range productList {
@@ -68,12 +66,11 @@ func findProduct(id int) (*Product, int, error) {
 			return p, i, nil
 		}
 	}
-
-	return nil, -1, ErrProductNotFound 
+	return nil, -1, ErrorProductNotFound
 }
 
 func getNextID() int {
-	lp := productList[len(productList)-1]
+	lp := productList[len(productList) - 1]
 	return lp.ID + 1
 }
 
