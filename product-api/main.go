@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/nicholasjackson/building-microservices-youtube/product-api/handlers"
 	"github.com/nicholasjackson/env"
+	"github.com/go-openapi/runtime/middleware"
 	"log"
 	"net/http"
 	"os"
@@ -37,6 +38,11 @@ func main() {
 	postRouter.HandleFunc("/", ph.AddProduct)
 	postRouter.Use(ph.MiddlewareProductValidation)
 
+	ops := middleware.RedocOpts{SpecURL: "/swagger.yaml"}
+	sh := middleware.Redoc(ops, nil)
+
+	getRouter.Handle("/docs", sh)
+	getRouter.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
 	//sm.Handle("/products", ph)
 
 	// create a new server

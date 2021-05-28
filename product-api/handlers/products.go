@@ -1,3 +1,17 @@
+// Package classification of Product API
+//
+// Documentation for Product API
+//
+// Schemes: http
+// BasePath: /
+// Version: 1.0.0
+//
+// Consumes:
+// - application/json
+//
+// Produces:
+// - application/json
+// swagger:meta
 package handlers
 
 import (
@@ -12,6 +26,14 @@ import (
 	"github.com/nicholasjackson/building-microservices-youtube/product-api/data"
 )
 
+// A list of products returns in the response
+// swagger:response productsResponse
+type productsResponse struct {
+	// All products in the system
+	// in: body
+	Body []data.Product
+}
+
 // Products is a http.Handler
 type Products struct {
 	l *log.Logger
@@ -21,6 +43,11 @@ type Products struct {
 func NewProducts(l *log.Logger) *Products {
 	return &Products{l}
 }
+
+// swagger:route GET /products products listProducts
+// Returns a list of products
+// responses:
+//  200: productsResponse
 
 // getProducts returns the products from the data store
 func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
@@ -61,6 +88,30 @@ func (p Products) UpdateProducts(rw http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		http.Error(rw, "Product not found", http.StatusNotFound)
+		return
+	}
+}
+
+// swagger:route DELETE /products/{id} products deleteProduct
+// Delete a product
+// responses:
+//   201: noContent
+
+// DeleteProduct deletes a product from the database
+func (p *Products) DeleteProduct(rw http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"])
+
+	p.l.Println("Handle DELETE Product", id)
+
+	err := data.DeleteProduct(id)
+
+	if err == data.ErrorProductNotFound {
+		http.Error(rw, "Product not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		http.Error(rw, "Product not found", http.StatusInternalServerError)
 		return
 	}
 }

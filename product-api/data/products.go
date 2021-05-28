@@ -9,12 +9,48 @@ import (
 	"time"
 )
 
+// swagger:parameters deleteProduct
+type productIDParameterWrapper struct {
+	// The id of the product to delete from the database
+	// in: path
+	// required: true
+	ID int `json:"id"`
+}
+
+// swagger:response noContent
+type productsNoContent struct {}
+
 // Product defines the structure for an API product
+// swagger:model
 type Product struct {
+	// The id for the product
+	//
+	// required: false
+	// min: 1
 	ID          int     `json:"id"`
+
+	// The name of the product
+	//
+	// required: true
+	// max length: 255
 	Name        string  `json:"name" validate:"required"`
+
+	// The id for the product
+	//
+	// required: true
+	// min: 10000
 	Description string  `json:"description"`
+
+	// The price for the product
+	//
+	// required: true
+	// min: 0.01
 	Price       float32 `json:"price" validate:"gt=0"`
+
+	// The sku for the product
+	//
+	// required: true
+	// pattern: [a-z]+-[a-z]+-[a-z]+
 	SKU         string  `json:"sku" validate:"required,sku"`
 	CreatedOn   string  `json:"-"`
 	UpdatedOn   string  `json:"-"`
@@ -76,7 +112,27 @@ func AddProduct(p *Product) {
 	productList = append(productList, p)
 }
 
+func DeleteProduct(id int) error {
+	i := findIndexByProductId(id)
+	if i == -1 {
+		return ErrorProductNotFound
+	}
+	productList = append(productList[:i], productList[i + 1])
+	return nil
+}
+
 var ErrorProductNotFound = fmt.Errorf("Product not found")
+
+// findIndex finds the index of the product in the database
+// returns -1 when no product can be found
+func findIndexByProductId(id int) int {
+	for i, p := range productList {
+		if p.ID == id {
+			return i
+		}
+	}
+	return -1
+}
 
 func findProduct(id int) (*Product, int, error) {
 	for i, p := range productList {
